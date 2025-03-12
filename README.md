@@ -2217,9 +2217,202 @@ Add the required waveforms.
 
 <details>
 
-<summary>Module 11 - Post-Synthesis Simulation (GLS) of BabySoC</summary>
+<summary> Post-Synthesis Simulation (GLS) of BabySoC</summary>
 
 #### Why do pre-synthesis Simulation? Why not just do post-synthesis Simulation? : 
+
+* Pre-synthesis simulation is done according to the logic we have designed for and written -> only functionality.
+* Post synthesis simulation / ‘gate level simulation’ is done after synthesis considering each and every gate delays into account. It reports the violations in both functionality and timing.
+
+  #### GLS: a brief introduction :
+
+* The term "gate level" refers to the netlist view of a circuit, usually produced by logic synthesis.
+* So while RTL simulation is pre-synthesis, GLS is post-synthesis.
+* The netlist view is a complete connection list consisting of gates and IP models with full functional
+   and timing behavior.
+* RTL simulation is a zero delay environment and events generally occur on the active clock edge.
+* GLS can be zero delay also, but is more often used in unit delay or full timing mode.
+
+* Gate level simulation is used to boost the confidence regarding implementation of a design and can help verify dynamic circuit behaviour, which cannot be verified accurately by static methods. It is a
+  significant step in the verification process.
+
+  ### **To synthesize the VSDBabySoC design,**
+  
+**Setting Up the Environment**
+
+Ensure Synopsys Library Compiler (lc_shell) is installed: Needed for .lib to .db conversions
+
+Download Required Libraries:
+
+Use wget to download sky130_fd_sc_hd__tt_025C_1v80.lib from the Skywater GitHub repository.
+
+1. **Ensure Synopsys Library Compiler (lc_shell) is installed**: Needed for .lib to .db conversions.
+2. **Download Required Libraries**: 
+   - Use `wget` to download `sky130_fd_sc_hd__tt_025C_1v80.lib` from the [Skywater GitHub repository](https://github.com/efabless/skywater-pdk-libs-sky130_fd_sc_hd/tree/master/timing).
+
+## Steps for Conversion of .lib to .db Files
+
+We need `.db` files for `avsddac`, `avsdpll`, and `sky130_fd_sc_hd__tt_025C_1v80` libraries. Follow these steps:
+
+### Converting `avsddac.lib` to `avsddac.db`
+
+/home/chetana/VSDBabySoC/src/lib
+
+![image](https://github.com/user-attachments/assets/1e223215-f485-46ed-a3a8-0dbd88737ec1)
+
+Launch lc_shell
+
+![image](https://github.com/user-attachments/assets/a09f21c9-4c18-4e35-8c4f-0a65b2257f42)
+
+Reading avsddac library `read_lib avsddac.lib`
+
+![image](https://github.com/user-attachments/assets/e0f9a711-5473-4b99-ae3a-22d7808ec24d)
+
+writing  .db file `write_lib avsddac -format db -output avsddac.db`
+
+![image](https://github.com/user-attachments/assets/aea85921-8a19-4c96-ac54-4e7254ea463f)
+
+### Converting `avsdpll.lib` to `avsdpll.db`
+
+/home/chetana/VSDBabySoC/src/lib
+
+![image](https://github.com/user-attachments/assets/bb839640-4cf1-40e7-9acf-b2551cf3fd45)
+
+Launch lc_shell
+
+![image](https://github.com/user-attachments/assets/9a365481-ae95-4bba-8ca7-38360b37e2f0)
+
+Reading avsdpll library `read_lib avsdpll.lib`
+
+![image](https://github.com/user-attachments/assets/54502a36-a962-431b-8e84-24a041f80948)
+
+Writing .db file `write_lib avsdpll -format db -output avsdpll.db`
+
+![image](https://github.com/user-attachments/assets/040fc14d-d327-4e0e-be68-79251c50369f)
+
+### Converting sky130_fd_sc_hd__tt_025C_1v80.lib to sky130_fd_sc_hd__tt_025C_1v80.db
+
+First, download the .lib file
+
+`wget https://raw.githubusercontent.com/efabless/skywater-pdk-libs-sky130_fd_sc_hd/master/timing/sky130_fd_sc_hd__tt_025C_1v80.lib`
+
+/home/chetana/VSDBabySoC/src/lib
+
+![image](https://github.com/user-attachments/assets/5507c8c0-af2a-4ecf-9274-93a6ec0ec824)
+
+Launch lc_shell
+
+![image](https://github.com/user-attachments/assets/1a6e79c2-2853-4777-87bf-a6463b1c7ef8)
+
+Reading sky130_fd_sc_hd__tt_025C_1v80 library `read_lib sky130_fd_sc_hd__tt_025C_1v80.lib.1`
+
+![image](https://github.com/user-attachments/assets/7ce69755-cb86-4a52-9858-3034169ce444)
+
+Writing .db file `write_lib sky130_fd_sc_hd__tt_025C_1v80 -format db -output sky130_fd_sc_hd__tt_025C_1v80.db.1`
+
+![image](https://github.com/user-attachments/assets/afbbe049-6305-423e-b37e-0880ca58bf49)
+
+## Running Synthesis and GLS
+
+After setting up the libraries, proceed with synthesis and GLS.
+
+### Synthesis
+
+/home/chetana/VSDBabySoC/src/lib
+
+![image](https://github.com/user-attachments/assets/3f68a694-94df-4a45-8e6b-922cebed1a5c)
+
+Launch dc_shell
+
+![image](https://github.com/user-attachments/assets/4b4e8a4d-67f8-413a-b1c3-b54a5571a92b)
+
+set target_library /home/chetana/VSDBabySoC/src/lib/sky130_fd_sc_hd__tt_025C_1v80.db.1
+
+set link_library {* /home/chetana/VSDBabySoC/src/lib/sky130_fd_sc_hd__tt_025C_1v80.db.1 /home/chetana/VSDBabySoC/src/lib/avsddac.db /home/chetana/VSDBabySoC/src/lib/avsdpll.db}
+
+![image](https://github.com/user-attachments/assets/6efdf4d7-5d07-4b96-a622-1e40fc72eb93)
+
+set search_path { /home/chetana/VSDBabySoC/src/include/ /home/chetana/VSDBabySoC/src/module/}
+
+![image](https://github.com/user-attachments/assets/c706bac5-007a-4b14-a572-1eba318687b2)
+
+read_file {sandpiper_gen.vh  sandpiper.vh  sp_default.vh  sp_verilog.vh clk_gate.v rvmyth.v rvmyth_gen.v vsdbabysoc.v} -autoread -top vsdbabysoc
+
+![image](https://github.com/user-attachments/assets/8480cccd-59ff-4699-b7cc-546acc28bdec)
+
+link
+
+![image](https://github.com/user-attachments/assets/4a1ec015-3c05-41dd-b943-9cf1093549bb)
+
+Compile_ultra
+
+![image](https://github.com/user-attachments/assets/c73f96ae-219b-4ff5-a26e-bdf911cf72e2)
+
+write_file -format verilog -hierarchy -output /home/chetana/VSDBabySoC/output/vsdbabysoc_net.v
+
+![image](https://github.com/user-attachments/assets/c8c09a38-ae7e-4c25-8cbf-c8c5f6b6d95e)
+
+report_qor
+
+![image](https://github.com/user-attachments/assets/e6742622-42b1-4880-9907-a3bb18d2adf8)
+
+![image](https://github.com/user-attachments/assets/d15c116e-9468-4b1e-9183-d4308593c072)
+
+![image](https://github.com/user-attachments/assets/cc0e26bc-f73d-444e-aabe-b286989a4e88)
+
+![image](https://github.com/user-attachments/assets/bd8f70b2-d1dd-4d87-865e-d74e9ea4cc10)
+
+---
+
+## Post-Synthesis Simulation
+
+---
+
+`iverilog -DFUNCTIONAL -DUNIT_DELAY=#1 -o ./output/post_synth_sim.out ./src/gls_model/primitives.v ./src/gls_model/sky130_fd_sc_hd.v ./output/vsdbabysoc_net.v ./src/module/avsdpll.v ./src/module/avsddac.v ./src/module/testbench.v`
+
+![image](https://github.com/user-attachments/assets/7a68cfcc-c2a1-4a0e-b18d-f23bc5721551)
+
+ebug the errors
+
+`./post_synth_sim.out`
+
+![image](https://github.com/user-attachments/assets/4bca2bac-9def-4478-8175-8b88ea0bbd8d)
+
+gtkwave dump.vcd
+
+![image](https://github.com/user-attachments/assets/1c36e456-9ea9-4a61-9586-0ea0d7e4c691)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
